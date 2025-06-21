@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IP Tools Serba Digitalku</title>
+  <style>
+    :root {
+      --green: #28a745;
+      --red: #dc3545;
+      --blue-light: #00b4d8;
+      --blue-dark: #003c6e;
+      --cloudflare-on: #f39c12;
+      --cloudflare-off: #bdc3c7;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f5f9;
+      color: #0a1a2f;
+      margin: 0;
+      padding: 0;
+    }
+    .main-header {
+      padding: 2rem 1rem 0.5rem;
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      background-clip: text;
+      color: transparent;
+      background-image: linear-gradient(90deg, var(--blue-dark), var(--blue-light));
+    }
+    .top-note {
+      text-align: center;
+      background: #e9f8ff;
+      color: #004466;
+      padding: 0.8rem 1rem;
+      margin: 0 auto 1.5rem;
+      font-size: 0.95rem;
+      max-width: 900px;
+      border-radius: 8px;
+      border: 1px solid #d4f1ff;
+    }
+    .top-note button {
+      margin: 0.5rem 0.3rem;
+      background: var(--blue-dark);
+      color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .card {
+      display: none;
+      background: linear-gradient(90deg, var(--blue-dark), var(--blue-light));
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    .card.active {
+      display: block;
+    }
+    input {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 0.6rem;
+      font-size: 1rem;
+    }
+    button.action {
+      margin-top: 1rem;
+      background: var(--green);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .result-box {
+      background: rgba(255,255,255,0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .result-box div {
+      margin: 0.3rem 0;
+    }
+    .spinner {
+      display: none;
+      margin: 20px auto;
+      width: 40px;
+      height: 40px;
+      border: 6px solid #e0f2f1;
+      border-top: 6px solid var(--blue-light);
+      border-right: 6px solid var(--blue-dark);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .subdomain-entry {
+      background: rgba(255,255,255,0.1);
+      margin: 0.3rem 0;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+    .cloud-icon {
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+    }
+    .section-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin: 1rem 0 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 0.3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+    }
+    .pagination {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .pagination button {
+      background: white;
+      color: var(--blue-dark);
+      border: none;
+      padding: 6px 12px;
+      margin: 2px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .pagination button.active {
+      background: var(--blue-dark);
+      color: white;
+    }
+    #ipHasil, #convHasil {
+    display: none;
+    }
+    .section-title-2 {
+    font-weight: bold;
+    font-size: 1rem;
+    margin: 1rem 0 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 0.3rem;
+    }
+    .cloud-icon {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    display: inline-block;
+    }
+    #convHasil .subdomain-entry span {
+    padding: 2px 4px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="main-header">🌐 LOOKUP SERBA DIGITALKU</div>
+  <div class="top-note">
+    <button onclick="showTab('sub')">🔍 Cari Subdomain</button>
+    <button onclick="showTab('ip')">🌐 Cek IP / Hostname</button>
+    <button onclick="showTab('convert')">🔁 IP ⇄ Hostname</button>
+  </div>
+
+  <div class="container">
+    <div class="card active" id="sub-tab">
+      <h3>🔍 Cari Subdomain</h3>
+      <input id="domainInput" placeholder="contoh: example.com">
+      <button class="action" onclick="scanSubdomain()">Mulai Scan</button>
+      <div class="spinner" id="spinner-sub"></div>
+      <div class="section-title" id="sub-title" style="display:none;">
+        <span>Subdomain</span><span>IP</span><span>Cloudflare</span>
+      </div>
+      <div id="subHasil"></div>
+      <div class="pagination" id="subPagination"></div>
+    </div>
+
+    <div class="card" id="ip-tab">
+    <h3>🌐 Cek IP / Hostname</h3>
+    <input id="ipInput" placeholder="contoh: 1.1.1.1 atau google.com">
+    <button class="action" onclick="cekIpInfo()">Cek Info</button>
+    <div class="spinner" id="spinner-ip"></div>
+    <div class="section-title-2" id="ip-title" style="display:none;">Detail IP</div>
+    <div class="result-box" id="ipHasil"></div>
+    </div>
+
+
+    <div class="card" id="convert-tab">
+    <h3>🔁 Convert IP ⇄ Hostname</h3>
+    <input id="convInput" placeholder="contoh: 1.1.1.1 atau google.com">
+    <button class="action" onclick="convertIpHost()">Convert</button>
+    <div class="spinner" id="spinner-convert"></div>
+    <div class="section-title-2" id="conv-title" style="display:none;">Hasil Konversi</div>
+    <div class="result-box" id="convHasil"></div>
+    </div>
+
+  </div>
+
+  <script>
+    function showTab(tabId) {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      document.getElementById(`${tabId}-tab`).classList.add('active');
+    }
+
+    let subData = [], currentPage = 1, perPage = 20;
+
+    function paginate(data, page, perPage) {
+      const start = (page - 1) * perPage;
+      return data.slice(start, start + perPage);
+    }
+
+    function renderSubdomainPage() {
+      const pageData = paginate(subData, currentPage, perPage);
+      let html = '';
+      for (const { sub, ip, isCF } of pageData) {
+        const ipLines = ip.split(', ').map(i => `<div>${i}</div>`).join('');
+        const icon = `<svg class="cloud-icon" fill="${isCF ? '#f39c12' : '#bdc3c7'}" viewBox="0 0 640 512"><path d="M537.6 226.6C533.6 144.6 466.1 80 384 80c-52.1 0-98.2 27.5-124.4 69.2C249.1 142.2 240.1 144 232 144c-44.2 0-80 35.8-80 80 0 4.3 .4 8.4 1 12.4C66.6 247.3 0 312.2 0 392c0 70.7 57.3 128 128 128H496c79.5 0 144-64.5 144-144 0-70.6-53.2-128.6-121.6-137.4z"/></svg>`;
+        html += `<div class="subdomain-entry"><span>${sub}</span><span>${ipLines}</span><span>${icon}</span></div>`;
+      }
+      document.getElementById("subHasil").innerHTML = html;
+      document.getElementById("sub-title").style.display = "grid";
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(subData.length / perPage);
+      let buttons = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const activeClass = i === currentPage ? 'active' : '';
+        buttons += `<button class="${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+      }
+      document.getElementById("subPagination").innerHTML = buttons;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderSubdomainPage();
+    }
+
+    async function scanSubdomain() {
+      const domain = document.getElementById("domainInput").value.trim();
+      if (!domain) return;
+
+      document.getElementById("spinner-sub").style.display = "block";
+      document.getElementById("subHasil").innerHTML = "";
+      document.getElementById("subPagination").innerHTML = "";
+
+      try {
+        const res = await fetch(`https://crt.sh/?q=%25.${domain}&output=json`);
+        const raw = await res.text();
+        if (!raw.trim().startsWith("[")) throw new Error("Data tidak valid");
+        const data = JSON.parse(raw);
+
+        const subs = [...new Set(data.flatMap(d => d.name_value.split("\n")).filter(name => name.endsWith(domain)))];
+
+        subData = [];
+        for (const sub of subs) {
+          let ip = "-", isCF = false;
+          try {
+            const dnsRes = await fetch(`https://dns.google/resolve?name=${sub}&type=A`);
+            const dnsJson = await dnsRes.json();
+            const ipList = (dnsJson.Answer || []).map(a => a.data).filter(ip => /^\d{1,3}(\.\d{1,3}){3}$/.test(ip));
+            ip = ipList.join(", ") || "-";
+            if (ipList.length) {
+              const infoRes = await fetch(`https://ipinfo.io/${ipList[0]}?token=2310ae5ab72ba1`);
+              const infoJson = await infoRes.json();
+              isCF = (infoJson.org || '').includes("AS13335");
+            }
+          } catch (err) {}
+          subData.push({ sub, ip, isCF });
+        }
+
+        currentPage = 1;
+        renderSubdomainPage();
+      } catch (err) {
+        alert("Gagal memuat data subdomain.");
+      } finally {
+        document.getElementById("spinner-sub").style.display = "none";
+      }
+    }
+
+    async function cekIpInfo() {
+    const input = document.getElementById("ipInput").value.trim();
+    const titleEl = document.getElementById("ip-title");
+    const hasilEl = document.getElementById("ipHasil");
+    const spinner = document.getElementById("spinner-ip");
+
+    if (!input) return;
+
+    titleEl.style.display = "none";
+    hasilEl.style.display = "none";
+    hasilEl.innerHTML = "";
+    spinner.style.display = "block";
+
+    try {
+        const res = await fetch(`https://ipinfo.io/${input}?token=2310ae5ab72ba1`);
+        const data = await res.json();
+
+        const ip = data.ip || input;
+        const hostname = data.hostname || '-';
+        const city = data.city || '-';
+        const region = data.region || '-';
+        const country = data.country || '-';
+        const timezone = data.timezone || '-';
+        const org = data.org || '-';
+        const loc = data.loc?.split(',') || ['-', '-'];
+        const isCF = org.includes('AS13335');
+
+        const icon = `<svg class="cloud-icon" fill="${isCF ? '#f39c12' : '#bdc3c7'}" viewBox="0 0 640 512"><path d="M537.6 226.6C533.6 144.6 466.1 80 384 80c-52.1 0-98.2 27.5-124.4 69.2C249.1 142.2 240.1 144 232 144c-44.2 0-80 35.8-80 80 0 4.3 .4 8.4 1 12.4C66.6 247.3 0 312.2 0 392c0 70.7 57.3 128 128 128H496c79.5 0 144-64.5 144-144 0-70.6-53.2-128.6-121.6-137.4z"/></svg>`;
+
+        hasilEl.innerHTML = `
+        <div class="subdomain-entry"><span>IP</span><span>${ip}</span><span></span></div>
+        <div class="subdomain-entry"><span>Hostname</span><span>${hostname}</span><span></span></div>
+        <div class="subdomain-entry">
+        <span>Cloudflare</span>
+        <span style="display:flex; align-items:center; gap:6px;">
+            ${isCF ? 'Ya' : 'Tidak'} ${icon}
+        </span>
+        <span></span>
+        </div>
+
+        <div class="subdomain-entry"><span>Kota</span><span>${city}</span><span></span></div>
+        <div class="subdomain-entry"><span>Wilayah</span><span>${region}</span><span></span></div>
+        <div class="subdomain-entry"><span>Negara</span><span>${country}</span><span></span></div>
+        <div class="subdomain-entry"><span>Koordinat</span><span>${loc[0]}, ${loc[1]}</span><span></span></div>
+        <div class="subdomain-entry"><span>Zona Waktu</span><span>${timezone}</span><span></span></div>
+        <div class="subdomain-entry"><span>Organisasi</span><span>${org}</span><span></span></div>
+        `;
+        titleEl.style.display = "block";
+        hasilEl.style.display = "block";
+    } catch (e) {
+        hasilEl.innerHTML = `<div class="subdomain-entry"><span>Error</span><span>Gagal mengambil data</span><span></span></div>`;
+        titleEl.style.display = "block";
+        hasilEl.style.display = "block";
+    } finally {
+        spinner.style.display = "none";
+    }
+    }
+
+    async function convertIpHost() {
+    const input = document.getElementById("convInput").value.trim();
+    if (!input) return;
+
+    document.getElementById("conv-title").style.display = "none";
+    document.getElementById("convHasil").style.display = "none";
+    document.getElementById("spinner-convert").style.display = "block";
+
+    let result = '-';
+    try {
+        if (/^\d{1,3}(\.\d{1,3}){3}$/.test(input)) {
+        const res = await fetch(`https://dns.google/resolve?name=${input}.in-addr.arpa&type=PTR`);
+        const data = await res.json();
+        result = data.Answer?.[0]?.data || '-';
+        } else {
+        const res = await fetch(`https://dns.google/resolve?name=${input}&type=A`);
+        const data = await res.json();
+        result = data.Answer?.map(a => a.data).join(', ') || '-';
+        }
+    } catch (e) {
+        result = 'Terjadi kesalahan saat mengambil data.';
+    }
+
+    document.getElementById("convHasil").innerHTML = `
+        <div class="section-title" style="display: grid; grid-template-columns: 1fr 2fr;">
+        <span>Tipe</span><span>Hasil</span>
+        </div>
+        <div class="subdomain-entry" style="grid-template-columns: 1fr 2fr;">
+        <span>${/^\d{1,3}(\.\d{1,3}){3}$/.test(input) ? 'IP → Hostname' : 'Hostname → IP'}</span>
+        <span>${result}</span>
+        </div>
+    `;
+    document.getElementById("conv-title").style.display = "block";
+    document.getElementById("convHasil").style.display = "block";
+    document.getElementById("spinner-convert").style.display = "none";
+    }
+
+    
+  // Hanya blok klik kanan di luar elemen input/textarea
+  document.addEventListener('contextmenu', function (e) {
+    const tag = e.target.tagName.toLowerCase();
+    if (tag !== 'input' && tag !== 'textarea') {
+      e.preventDefault();
+    }
+  });
+
+  // Blok shortcut keyboard umum untuk membuka Developer Tools
+  document.addEventListener('keydown', function (e) {
+    if (e.keyCode === 123) { // F12
+      e.preventDefault();
+      return false;
+    }
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+      e.preventDefault();
+      return false;
+    }
+    if (e.ctrlKey && e.keyCode === 85) { // Ctrl+U
+      e.preventDefault();
+      return false;
+    }
+  });
+
+    // Fungsi untuk mendeteksi apakah perangkat adalah desktop
+  function isDesktop() {
+    return !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  // Hanya blok klik kanan di luar elemen input/textarea
+  document.addEventListener('contextmenu', function (e) {
+    const tag = e.target.tagName.toLowerCase();
+    if (tag !== 'input' && tag !== 'textarea') {
+      e.preventDefault();
+    }
+  });
+
+  // Blok shortcut keyboard umum untuk membuka Developer Tools
+  document.addEventListener('keydown', function (e) {
+    if (e.keyCode === 123) { // F12
+      e.preventDefault();
+      return false;
+    }
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+      e.preventDefault();
+      return false;
+    }
+    if (e.ctrlKey && e.keyCode === 85) { // Ctrl+U
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Deteksi devtools (hanya aktif di desktop)
+  if (isDesktop()) {
+    setInterval(function () {
+      const widthThreshold = window.outerWidth - window.innerWidth > 200;
+      const heightThreshold = window.outerHeight - window.innerHeight > 200;
+      if (widthThreshold || heightThreshold) {
+        document.body.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+            <h1 style="color: red; font-family: Arial, sans-serif; text-align: center;">
+              🚫 Akses diblokir: Developer Tools terdeteksi!
+            </h1>
+          </div>
+        `;
+      }
+    }, 1000);
+  }
+  </script>
+</body>
+</html>
